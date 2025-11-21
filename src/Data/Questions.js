@@ -43,4 +43,5 @@ export default [
     { text: "¿Dónde está Río de Janeiro?", lat: -22.9068, lng: -43.1729 },
     { text: "¿Dónde está Los Ángeles?", lat: 34.0522, lng: -118.2437 },
   ]
+  
 ];

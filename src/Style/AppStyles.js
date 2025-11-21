@@ -2,10 +2,10 @@ import { StyleSheet } from 'react-native';
 
 /* 🎨 PALETA DE COLORES PRINCIPAL */
 export const colors = {
-  gradientStart: '#3A97C1', // Inicio degradado (azul cielo)
-  gradientMiddle: '#6355C8', // Medio (morado)
-  gradientEnd: '#8400FF', // Final (morado fuerte)
-  
+  gradientStart: '#3A97C1',
+  gradientMiddle: '#6355C8',
+  gradientEnd: '#8400FF',
+
   purple: '#4D0080',
   panelPurple: '#6750A4',
   panelLocked: 'rgba(103,80,164,0.4)',
@@ -17,39 +17,48 @@ export const colors = {
   black: '#000000'
 };
 
-/* 🌍 ESTILOS GLOBALES */
+/* 🌍 ESTILOS GLOBALES (solo para cosas compartidas) */
 export const globalStyles = StyleSheet.create({
-  // Estructura base de pantalla
   container: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
     padding: 16,
+    marginTop: 80,
   },
 
-  // Para pantallas con fondo degradado
+  flex1: {
+    flex: 1,
+  },
+
   gradientBackground: {
     flex: 1,
   },
 
-  // Centrado rápido
   center: {
     justifyContent: 'center',
     alignItems: 'center',
   },
 
-  // Texto blanco general
   textWhite: {
     color: colors.white,
   },
 
-  // Botón base
+  title: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: colors.white,
+    marginBottom: 20,
+  },
+
   button: {
     padding: 12,
     borderRadius: 10,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: colors.buttonBlue,
+    width: "80%",
+    marginTop: 10,
   },
 
   buttonText: {
@@ -58,16 +67,50 @@ export const globalStyles = StyleSheet.create({
     fontSize: 16,
   },
 
-  // Tarjeta genérica
-  roundedCard: {
-    borderRadius: 25,
+  // 🔥 Necesario para QuestionarioScreen
+  questionPanel: {
+    width: "90%",
+    backgroundColor: colors.panelPurple,
+    padding: 20,
+    borderRadius: 20,
+    marginBottom: 20,
+    alignSelf: "center",
+  },
+
+  mapContainer: {
+    width: "100%",
+    height: 320,
+    borderRadius: 15,
+    overflow: "hidden",
+    marginBottom: 20,
+  },
+
+  // 🔥 Usado en Login
+  guestButton: {
+    padding: 12,
+    borderRadius: 10,
+    backgroundColor: colors.exitButton,
+    width: "80%",
+    alignItems: "center",
+    marginTop: 10,
+  },
+
+  // 🔥 Usado en niveles
+  bestScoreButton: {
+    backgroundColor: colors.panelPurple,
     padding: 14,
-    marginVertical: 8,
-    backgroundColor: colors.purple,
+    borderRadius: 14,
+    width: "80%",
+    alignSelf: "center",
+    marginVertical: 20,
+    alignItems: "center",
+  },
+
+  // 🔥 Separación en el botón de volver en Resultados
+  bottomSafeButton: {
+    marginBottom: 35,
   },
 });
-
-
 
 /* 🔐 LOGIN SCREEN */
 export const loginStyles = StyleSheet.create({
@@ -89,43 +132,79 @@ export const loginStyles = StyleSheet.create({
   },
 });
 
-
-
 /* 🎮 LEVELS SCREEN */
+
 export const levelStyles = StyleSheet.create({
-  levelButton: {
-    width: 250,
-    padding: 14,
-    backgroundColor: '#1f1f1f',
-    marginVertical: 8,
-    borderRadius: 12,
+  levelTitle: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: colors.white,
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+
+  levelBox: {
+    width: '90%',
+    height: 60,
+    backgroundColor: colors.purple,
+    borderRadius: 15,
+    marginVertical: 10,
+    justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 2,
-    borderColor: '#00c853',
   },
 
   lockedLevel: {
-    backgroundColor: '#2b2b2b',
-    borderColor: '#555',
+    backgroundColor: colors.panelLocked,
   },
 
   levelText: {
-    color: colors.white,
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: '600',
+    color: colors.white,
   },
 });
 
 
-
 /* ❓ QUESTION SCREEN */
 export const questionStyles = StyleSheet.create({
+  container: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 16,
+    marginTop: 0,
+  },
+
   questionText: {
-    fontSize: 22,
+    fontSize: 32,
     fontWeight: 'bold',
     color: colors.white,
     textAlign: 'center',
     marginBottom: 20,
+  },
+  
+  progressText: {
+    color: colors.white,
+    fontSize: 20,
+    fontWeight: "bold",
+    marginBottom: 10,
+    textAlign: "center",
+    paddingTop: 90,
+  },
+
+  map: {
+    width: "100%",
+    height: "60%",
+    marginBottom: 10,
+  },
+  
+  mapCenterIcon: {
+    position: "absolute",
+    top: "50%",
+    left: "50%",
+    marginTop: -20,
+    marginLeft: -15,
+    zIndex: 10,
   },
 
   answerButton: {
@@ -151,8 +230,6 @@ export const questionStyles = StyleSheet.create({
   },
 });
 
-
-
 /* 🏁 RESULT SCREEN */
 export const resultsStyles = StyleSheet.create({
   resultsTitle: {
@@ -170,27 +247,23 @@ export const resultsStyles = StyleSheet.create({
     marginBottom: 20,
   },
 
-  progressBarContainer: {
-    height: 14,
-    backgroundColor: '#8A63D2',
-    borderRadius: 10,
-    marginVertical: 20,
-    overflow: 'hidden',
-    width: '85%',
-  },
-
-  progressBarFill: {
-    height: '100%',
-    backgroundColor: colors.buttonBlue,
-    borderRadius: 10,
-  },
-
-  resultButton: {
-    marginTop: 15,
-    backgroundColor: colors.buttonBlue,
+  answerBox: {
+    backgroundColor: colors.panelPurple,
+    borderRadius: 15,
     padding: 12,
-    borderRadius: 12,
-    alignItems: 'center',
-    width: '80%',
+    marginVertical: 6,
   },
+  answerText: {
+    color: colors.white,
+    fontSize: 16,
+  },
+  resultButtonText: {
+    color: colors.white,
+    fontWeight: 'bold',
+    fontSize: 18,
+    textAlign: 'center',
+  }
+
+  
 });
+

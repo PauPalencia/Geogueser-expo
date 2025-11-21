@@ -1,133 +1,86 @@
-// src/Screen/QuestionarioScreen.js
-
-import React, { useEffect, useState, useRef } from "react";
-import { View, Text, TouchableOpacity, Alert } from "react-native";
-import MapView, { Marker, Polyline } from "react-native-maps";
-import * as Location from "expo-location";
-import { Ionicons } from "@expo/vector-icons";
-import { globalStyles } from "../Style/AppStyles";
-import Questions from "../Data/Questions";
-import { saveGameResult } from "../Firebase/FirestoreFuncions.js";
+import React, { useState } from 'react';
+import { View, Text, TouchableOpacity } from 'react-native';
+import MapView, { Marker } from 'react-native-maps';
 import { LinearGradient } from 'expo-linear-gradient';
-import { colors, globalStyles } from "../Style/AppStyles";
+import { questionStyles, globalStyles, colors } from '../Style/AppStyles';
+import Questions from '../Data/Questions';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function QuestionarioScreen({ route, navigation }) {
-  const { level } = route.params;
-  const questions = Questions[level - 1];
+  const { level, unlockedLevels: initialUnlockedLevels } = route.params;
+  const [index, setIndex] = useState(0);
+  const [answers, setAnswers] = useState([]);
+  const [selectedLocation, setSelectedLocation] = useState({
+    latitude: 40.4168,
+    longitude: -3.7038,
+  });
+  const [unlockedLevels, setUnlockedLevels] = useState(initialUnlockedLevels || [1]);
 
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [selectedPoint, setSelectedPoint] = useState(null);
-  const [results, setResults] = useState([]);
-  const mapRef = useRef();
+  const question = Questions[level][index];
 
-  const question = questions[currentIndex];
+  const handleNext = async () => {
+    const { latitude, longitude } = selectedLocation;
+    const dist = Math.sqrt(Math.pow(latitude - question.lat, 2) + Math.pow(longitude - question.lng, 2));
+    const score = Math.max(0, 100 - dist * 10);
 
-  // cálculo distancia por Haversine
-  function getDistance(lat1, lon1, lat2, lon2) {
-    const R = 6371; // km
-    const dLat = ((lat2 - lat1) * Math.PI) / 180;
-    const dLon = ((lon2 - lon1) * Math.PI) / 180;
-    const a =
-      Math.sin(dLat / 2) ** 2 +
-      Math.cos(lat1 * Math.PI / 180) *
-        Math.cos(lat2 * Math.PI / 180) *
-        Math.sin(dLon / 2) ** 2;
+    const newAns = [
+      ...answers,
+      { question: question.text, selectedOption: { ...selectedLocation }, distance: dist, score }
+    ];
 
-    return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
-  }
+    setAnswers(newAns);
 
-  function calcScore(distance) {
-    let score = Math.max(0, 10000 - distance * 200);
-    return Math.round(score);
-  }
-
-  const handleSelect = () => {
-    if (!selectedPoint) return;
-
-    const distance = getDistance(
-      selectedPoint.latitude,
-      selectedPoint.longitude,
-      question.lat,
-      question.lng
-    );
-
-    const pts = calcScore(distance);
-
-    const newEntry = {
-      question: question.text,
-      score: pts,
-      lat: question.lat,
-      lng: question.lng,
-      userLat: selectedPoint.latitude,
-      userLng: selectedPoint.longitude
-    };
-
-    setResults((prev) => [...prev, newEntry]);
-
-    if (currentIndex === questions.length - 1) {
-      const totalScore = [...results, newEntry].reduce((a, b) => a + b.score, 0);
-
-      saveGameResult(level, [...results, newEntry], totalScore);
-
-      navigation.navigate("ResultadoScreen", {
-        results: [...results, newEntry],
-        totalScore,
-        maxScore: questions.length * 10000,
-      });
-    } else {
-      setCurrentIndex(currentIndex + 1);
-      setSelectedPoint(null);
+    // 🔓 Desbloquear siguiente nivel
+    const nextLevel = level + 1;
+    if (!unlockedLevels.includes(nextLevel) && nextLevel <= 4) {
+      const updatedUnlockedLevels = [...unlockedLevels, nextLevel];
+      setUnlockedLevels(updatedUnlockedLevels);
+      await AsyncStorage.setItem('unlockedLevels', JSON.stringify(updatedUnlockedLevels));
     }
+
+    if (index + 1 < Questions[level].length) setIndex(index + 1);
+    else
+      navigation.replace('ResultadoScreen', {
+        level,
+        answers: newAns
+      });
   };
 
   return (
-    <View style={globalStyles.containerGradient}>
-      <View style={{ flexDirection: "row", justifyContent: "flex-end", padding: 10 }}>
-        <TouchableOpacity
-          onPress={() =>
-            Alert.alert("Salir", "¿Seguro que quieres salir? No se guardará el progreso.", [
-              { text: "Cancelar", style: "cancel" },
-              { text: "Salir", onPress: () => navigation.navigate("LevelSelect") }
-            ])
+    <LinearGradient
+      colors={[colors.gradientStart, colors.gradientMiddle, colors.gradientEnd]}
+      style={globalStyles.gradientBackground}
+    >
+      <View style={questionStyles.container}>
+        <Text style={questionStyles.questionText}>
+          Pregunta {index + 1}/{Questions[level].length}
+        </Text>
+
+        <View style={questionStyles.questionContainer}>
+          <Text style={questionStyles.questionText}>{question.text}</Text>
+        </View>
+
+        <MapView
+          style={questionStyles.map}
+          initialRegion={{
+            latitude: 40.4168,
+            longitude: -3.7038,
+            latitudeDelta: 10,
+            longitudeDelta: 10,
+          }}
+          onRegionChange={(region) =>
+            setSelectedLocation({ latitude: region.latitude, longitude: region.longitude })
           }
-          style={globalStyles.exitBtn}
         >
-          <Ionicons name="close" size={20} color="#fff" />
-          <Text style={globalStyles.exitBtnText}>Salir</Text>
+          <Marker coordinate={selectedLocation} anchor={{ x: 0.5, y: 0.5 }} pinColor="red" />
+        </MapView>
+
+        <TouchableOpacity style={globalStyles.button} onPress={handleNext}>
+          <Text style={globalStyles.buttonText}>
+            {index + 1 === Questions[level].length ? 'Finalizar' : 'Siguiente'}
+          </Text>
         </TouchableOpacity>
       </View>
-
-      <Text style={globalStyles.questionCounter}>
-        Pregunta {currentIndex + 1}/{questions.length}
-      </Text>
-      <Text style={globalStyles.questionText}>{question.text}</Text>
-
-      <MapView
-        ref={mapRef}
-        style={globalStyles.map}
-        initialRegion={{
-          latitude: 20,
-          longitude: 0,
-          latitudeDelta: 100,
-          longitudeDelta: 100,
-        }}
-        mapType="satellite"
-        onPress={(e) => setSelectedPoint(e.nativeEvent.coordinate)}
-      >
-        {selectedPoint && (
-          <Marker
-            coordinate={selectedPoint}
-            pinColor="red"
-          />
-        )}
-      </MapView>
-
-      <TouchableOpacity style={globalStyles.selectBtn} onPress={handleSelect}>
-        <Ionicons name="location" size={20} color="#fff" />
-        <Text style={globalStyles.selectBtnText}>
-          {currentIndex === questions.length - 1 ? "Finalizar" : "Seleccionar"}
-        </Text>
-      </TouchableOpacity>
-    </View>
+    </LinearGradient>
   );
 }
